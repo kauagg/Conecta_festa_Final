@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eventos do Cliente - Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    /* Reset básico */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      color: #343a40;
+    }
+
+    /* Barra Lateral */
+    .sidebar {
+      background-color: #374151;
+      width: 260px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      transition: width 0.3s ease;
+    }
+
+    .sidebar.collapsed {
+      width: 80px;
+    }
+
+    .logo-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid #374151;
+      transition: all 0.3s ease;
+    }
+
+    .logo {
+      max-width: 180px;
+      height: auto;
+      transition: max-width 0.3s ease;
+    }
+
+    .sidebar.collapsed .logo {
+      max-width: 50px;
+    }
+
+    .toggle-btn {
+      cursor: pointer;
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      color: white;
+    }
+
+    .sidebar nav {
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .sidebar nav a {
+      color: #bdc3c7;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+      transition: background 0.2s ease;
+      justify-content: flex-start; /* Alinhando os ícones e textos à esquerda */
+      text-align: left;
+      border-radius: 8px;
+    }
+
+    .sidebar nav a:hover, .sidebar nav a.active {
+      background-color: #374151d8;
+      color: #ecf0f1;
+    }
+
+    .sidebar.collapsed nav a span {
+      display: none;
+    }
+
+    /* Conteúdo */
+    .content {
+      margin-left: 260px;
+      flex-grow: 1;
+      padding: 2rem;
+      transition: margin-left 0.3s ease;
+    }
+
+    .content.collapsed {
+      margin-left: 80px;
+    }
+
+    /* Cards de Eventos */
+    .event-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .event-card {
+      background-color: #ffffff;
+      border-radius: 10px;
+      padding: 25px 30px;
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .event-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgb(0 0 0 / 0.15);
+    }
+
+    .event-status {
+      align-self: flex-start;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 15px;
+      color: #fff;
+    }
+
+    .event-status.confirmado {
+      background-color: #27ae60;
+    }
+
+    .event-status.cancelado {
+      background-color: #c0392b;
+    }
+
+    .event-status.pendente {
+      background-color: #f39c12;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 80px;
+      }
+
+      .sidebar.collapsed .logo {
+        max-width: 50px;
+      }
+
+      .sidebar nav a span {
+        display: none;
+      }
+
+      .content {
+        margin-left: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar" id="sidebar">
+    <div class="logo-container">
+      <img src="assets/images/2Logo.png" alt="Logo" class="logo">
+    </div>
+    <nav>
+      <a href="cliente-dashboard.html"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+            <a href="cliente-orcamentos.html"><i class="fas fa-file-invoice-dollar"></i><span>Meus Orçamentos</span></a>
+            <a href="cliente-eventos.html"><i class="fas fa-calendar-alt"></i><span>Meus Eventos</span></a>
+            <a href="cliente-mensagens.html" class="active"><i class="fas fa-envelope"></i><span>Mensagens</span></a>
+            <a href="cliente-login.html" onclick="sair()"><i class="fas fa-sign-out-alt"></i><span>Sair</span></a>
+    </nav>
+  </div>
+
+  <div class="content" id="content">
+    <h1>Seus Eventos</h1>
+    <div class="event-list">
+      <article class="event-card">
+        <div class="event-title">Festa de Aniversário</div>
+        <div class="event-date">25/05/2025</div>
+        <div class="event-description">Celebração especial com amigos e familiares.</div>
+        <div class="event-status confirmado">Confirmado</div>
+      </article>
+
+      <article class="event-card">
+        <div class="event-title">Reunião Corporativa</div>
+        <div class="event-date">10/06/2025</div>
+        <div class="event-description">Reunião anual sobre objetivos da empresa.</div>
+        <div class="event-status cancelado">Cancelado</div>
+      </article>
+
+      <article class="event-card">
+        <div class="event-title">Workshop de Tecnologia</div>
+        <div class="event-date">15/07/2025</div>
+        <div class="event-description">Discussões sobre inovações tecnológicas.</div>
+        <div class="event-status pendente">Pendente</div>
+      </article>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("collapsed");
+      document.getElementById("content").classList.toggle("collapsed");
+    }
+
+    function sair() {
+      alert("Logout realizado!");
+    }
+  </script>
+
+</body>
+</html>
