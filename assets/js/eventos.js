@@ -1,62 +1,87 @@
-const form = document.getElementById('formEvento');
-    const lista = document.getElementById('listaEventos');
+const form = document.getElementById("formEvento");
+const lista = document.getElementById("listaEventos");
 
-    let eventos = JSON.parse(localStorage.getItem('eventos')) || [];
 
-    function salvarEventos() {
-      localStorage.setItem('eventos', JSON.stringify(eventos));
-    }
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const nome = document.getElementById("nomeEvento").value;
+  const status = document.getElementById("statusEvento").value;
 
-    function renderizarEventos() {
-      lista.innerHTML = '';
-      eventos.forEach((evento, index) => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+  const resposta = await fetch("adicionar-evento.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nome, status })
+  });
 
-        const nome = document.createElement('span');
-        nome.textContent = evento.nome;
+  const resultado = await resposta.json();
 
-        const tag = document.createElement('span');
-        tag.className = `tag ${evento.status}`;
-        tag.textContent = evento.status === 'success' ? 'Confirmado' : 'Pendente';
+  if (resposta.ok) {
+    form.reset();
+    carregarEventos();
+  } else {
+    alert(resultado.erro || "Erro ao adicionar evento.");
+  }
+});
 
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'btn btn-sm btn-outline-secondary ms-2';
-        toggleBtn.textContent = 'Alternar Status';
-        toggleBtn.onclick = function() {
-          eventos[index].status = eventos[index].status === 'success' ? 'warning' : 'success';
-          salvarEventos();
-          renderizarEventos();
-        };
 
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn btn-sm btn-delete ms-2';
-        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-        deleteBtn.onclick = function() {
-          eventos.splice(index, 1);
-          salvarEventos();
-          renderizarEventos();
-        };
+async function carregarEventos() {
+  const resposta = await fetch("listar-eventos.php");
+  const eventos = await resposta.json();
 
-        const controls = document.createElement('div');
-        controls.appendChild(tag);
-        controls.appendChild(toggleBtn);
-        controls.appendChild(deleteBtn);
+  lista.innerHTML = "";
 
-        li.appendChild(nome);
-        li.appendChild(controls);
-        lista.appendChild(li);
-      });
-    }
+  eventos.forEach(evento => {
+    const li = document.createElement("li");
+    li.className = `list-group-item d-flex justify-content-between align-items-center list-group-item-${evento.status}`;
+    li.innerHTML = `
+      <span>${evento.nome}</span>
+      <div>
+        <button class="btn btn-sm btn-outline-secondary me-2" onclick="alterarStatus(${evento.id}, '${evento.status}')">
+          Alterar Status
+        </button>
+        <button class="btn btn-sm btn-outline-danger" onclick="excluirEvento(${evento.id})">
+          Excluir
+        </button>
+      </div>
+    `;
+    lista.appendChild(li);
+  });
+}
 
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const nome = document.getElementById('nomeEvento').value;
-      const status = document.getElementById('statusEvento').value;
-      eventos.push({ nome, status });
-      salvarEventos();
-      renderizarEventos();
-      form.reset();
-    });
+async function alterarStatus(id, statusAtual) {
+  const novoStatus = statusAtual === "success" ? "warning" : "success";
 
-    renderizarEventos();
+  const resposta = await fetch("alterar-status.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, status: novoStatus })
+  });
+
+  const resultado = await resposta.json();
+
+  if (resposta.ok) {
+    carregarEventos();
+  } else {
+    alert(resultado.erro || "Erro ao alterar status.");
+  }
+}
+
+async function excluirEvento(id) {
+  if (!confirm("Tem certeza que deseja excluir este evento?")) return;
+
+  const resposta = await fetch("excluir-evento.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id })
+  });
+
+  const resultado = await resposta.json();
+
+  if (resposta.ok) {
+    carregarEventos();
+  } else {
+    alert(resultado.erro || "Erro ao excluir evento.");
+  }
+}
+
+carregarEventos();

@@ -82,37 +82,33 @@
       document.getElementById("mensagemErro").textContent = "";
     }
 
-    document.getElementById("clienteForm").addEventListener("submit", function (e) {
+    document.getElementById("clienteForm").addEventListener("submit", async function (e) {
       e.preventDefault();
 
       const email = document.getElementById("email").value;
       const senha = document.getElementById("senha").value;
+      const mensagemErro = document.getElementById("mensagemErro");
 
-      if (modoCadastro) {
-        // Cadastro
-        const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
-        const clienteExistente = clientes.find(c => c.email === email);
+      const url = modoCadastro ? "cadastrar-cliente.php" : "login-cliente.php";
 
-        if (clienteExistente) {
-          document.getElementById("mensagemErro").textContent = "Esse email já está cadastrado.";
-          return;
-        }
+      const resposta = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha })
+      });
 
-        clientes.push({ email, senha });
-        localStorage.setItem("clientes", JSON.stringify(clientes));
-        alert("Cadastro realizado com sucesso! Faça login.");
-        alternarModo();
-      } else {
-        // Login
-        const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
-        const cliente = clientes.find(c => c.email === email && c.senha === senha);
+      const resultado = await resposta.json();
 
-        if (cliente) {
-          localStorage.setItem("clienteLogado", JSON.stringify(cliente));
-          window.location.href = "cliente-dashboard.html";
+      if (resposta.ok) {
+        if (modoCadastro) {
+          alert("Cadastro realizado com sucesso! Faça login.");
+          alternarModo();
         } else {
-          document.getElementById("mensagemErro").textContent = "Email ou senha inválidos.";
+          localStorage.setItem("clienteLogado", JSON.stringify(resultado.cliente));
+          window.location.href = "cliente-dashboard.html";
         }
+      } else {
+        mensagemErro.textContent = resultado.erro || "Erro inesperado.";
       }
     });
   </script>
